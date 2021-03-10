@@ -11,12 +11,31 @@ https://us.pg.com/sustainability-reports/ offer both options.
 
 import os
 import PyPDF2
-
+import pandas as pd
 DATA_PATH = 'report_files'
 START_YEAR = 2000
 LAST_YEAR = 2020
 YEARS = [str(i) for i in list(range(START_YEAR, LAST_YEAR))]
 
+
+def get_files_format(path):
+    valid_formats = ['.pdf', '.txt']
+    files = os.listdir(path)
+    files = [file for file in files if os.path.isfile(os.path.join(path, file))]
+    valid_files = []
+    for valid_format in valid_formats:
+        valid_files.extend([file for file in files if file.endswith(valid_format)])
+    return valid_files
+
+
 if __name__ == "__main__":
 
     company_names = os.listdir(DATA_PATH)
+    company_names = [company_name for company_name in company_names
+                     if os.path.isdir(os.path.join(DATA_PATH, company_name))]
+
+    company_files = {company_name: get_files_format(path=os.path.join(DATA_PATH, company_name)) for company_name in company_names}
+    df = pd.DataFrame(company_files)
+
+
+
