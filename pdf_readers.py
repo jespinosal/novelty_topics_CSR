@@ -83,9 +83,7 @@ def pypdf4_reader(file_path, page_indexes):
 if __name__ == "__main__":
 
     file_path_ = 'report_files/microsoft/Microsoft-2019-CSR-Annual-Report.pdf'
-    file_path_ = 'report_files/microsoft/citizenship2004.pdf'
     page_indexes_ = [1, 2, 3, -3, -2, -1]
     raw_corpus_pypdf2 = pypdf2_reader(file_path_, page_indexes_)
     raw_corpus_pypdf4 = pypdf4_reader(file_path_, page_indexes_)
     raw_corpus_text_miner = pdf_miner_reader(file_path_, page_indexes_)
-

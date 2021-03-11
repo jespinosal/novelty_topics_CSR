@@ -1,19 +1,69 @@
 
 """
-The reported files format have the following rules:
+
+1. INPUT DATA STRUCTURE
+We have to storage the pdf-reports according to the following rules :
 0. The project must include a data directory called <report_files>
-1. We need inside <report_files> a folder per company; this folder must include the CSR reports to analyze
+1. We need inside <report_files> a folder per company; this folder must include all the CSR reports to analyze
 2. We have to include the reporting year in the file name using the format report_file_name_<year>.pdf
 where year is a YYYY format, for instance: report_CSR_disney_2005.pfd, 2017disneycsrupdate.pdf,
 report-2005-CSR-disney.pfd etc.
 3. If you have the option, download Overviews reports instead of the entire reports, for instance:
 https://us.pg.com/sustainability-reports/ offer both options.
 
-The PDF files will read include files from the year 2000 to 2020, it involves many different
-PDF formats (old and new style). Each document will be read through different packages to support the different
-pdf formats, the order will respect the following order:  PyPDF4 -> PyPDF2 -> pdfplumber -> pdfminer. The reader
-script will apply all the libraries returning as more text content as possible.
+This is an example of the report_files structure:
+report_files
+├── disney
+    ├── 2017disneycsrupdate.pdf
+    ├── 2018-CSR-Report.pdf
+    ├── CSR2019Report.pdf
+    ├── FY08Disney_CR_Report_2008.pdf
+    ├── FY09Disney_FY09_CR_Update_2009.pdf
+    └── FY10Disney_2010_CC_Report.pdf
+├── microsoft
+    ├── CitizenshipReport_Composite_LowRes_9-22-2005.pdf
+    ├── Microsoft-2018-CSR-Annual-Report.pdf
+    ├── Microsoft-2019-CSR-Annual-Report.pdf
+    ├── Microsoft-2020-CSR-Annual-Report.pdf
+    ├── citizenship2003.pdf
+    ├──citizenship2004.pdf
+└── p&g
+    ├── 2000_Sustainability_Report_Overview.pdf
+    ├── 2001_Sustainability_Report_Overview.pdf
+    ├── 2002_Sustainability_Report_Overview.pdf
+    ├── 2017_Citizenship_Report_Executive_Summary.pdf
+    ├── 2018_P_G_Corporate_Citizenship_Report_Executive_Summary.pdf
+    └── citizenship_report_2019_executive_summary.pdf
+
+
+2. HOW WORKS
+For this project, the PDF files that we will process include files from the year 2000 to 2020; it involves several
+PDF formats (old and new style). Each document is processed through 3 pdf-scrapping packages to support the different
+types of pdf formats (PyPDF4 -> PyPDF2 -> pdfminer). The reader script will apply all the libraries returning the
+result with more text content.
+
+You have only one parameter to set in this script, "page_indexes". It works as follow, imagine you have a pdf
+document with 40 pages:
+You can indicate positive indexes, for instance, [1,2,3] will return a corpus with the pages 1,2 and 3 of each report.
+You can indicate negative indexex, for instance, [-1,-2,-3] will return a corpus with the last 3 pages 40, 39 and 38.
+You can mix positive and negative indexes, for instance, [1,2,-1] will return a corpus with pages 1, 2 and 40.
+If you want all the pages use page_indexes = [], but is not recommended, the main information is in the first and last
+pages. All the pages could produce low quality topics in future steps.
+
+By default, page_indexes = [0, 1, 2, -3, -2, -1], to process the first and last 3 pages of each report.
+
+3. OUTPUT DATA STRUCTURE
+
+At the end. the script will create a table where each row contains the information of a unique report, indicating
+the company name, the file name, the reporting year, the pdf-report path and the extracted corpus for instance:
+
+company_name:                                             microsoft
+company_files:                 Microsoft-2019-CSR-Annual-Report.pdf
+year:                                                          2019
+file_path:        report_files/microsoft/Microsoft-2019-CSR-Annu...
+corpus:           microsoft corporate social responsibility repo...
 """
+
 import os
 import pandas as pd
 from pdf_readers import pypdf4_reader, pypdf2_reader, pdf_miner_reader
@@ -25,12 +75,13 @@ DATA_PATH = 'report_files'
 START_YEAR = 2000
 LAST_YEAR = 2020
 YEARS = [str(i) for i in list(range(START_YEAR, LAST_YEAR))]
+OUTPUT_PATH = 'text_corpus'
 
 
 def get_files_format(path_directory):
     """
     Get from the path_directory all the valid files
-    :param path:
+    :param path_directory:
     :return:
     """
     valid_formats = [PDF_FORMAT, TEXT_FORMAT]
@@ -116,6 +167,9 @@ if __name__ == "__main__":
     df_reports_data['file_path'] = df_reports_data.apply(lambda row: os.path.join(DATA_PATH,
                                                                                   row['company_name'],
                                                                                   row['company_files']), axis=1)
-    page_indexes = [0, 1, -2, -1]
+    page_indexes = [0, 1, 2, -3, -2, -1]  # Choose the page index you want
     df_reports_data['corpus'] = df_reports_data['file_path'].apply(lambda pdf_path: ReportsReader(pdf_path,
                                                                                                   page_indexes)())
+    file_name = 'csr_corpus_pages_index'+"_".join([str(page_index) for page_index in page_indexes])+'.csv'
+    file_path = os.path.join(OUTPUT_PATH, file_name)
+    df_reports_data.to_csv(file_name, sep=';', index=False)
