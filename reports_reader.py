@@ -14,11 +14,10 @@ PDF formats (old and new style). Each document will be read through different pa
 pdf formats, the order will respect the following order:  PyPDF4 -> PyPDF2 -> pdfplumber -> pdfminer. The reader
 script will apply all the libraries returning as more text content as possible.
 """
-
 import os
 import pandas as pd
-from pdf_parsers.new_style import pypdf4_reader
-from pdf_parsers.text_cleaner import text_cleaner
+from pdf_readers import pypdf4_reader, pypdf2_reader, pdf_miner_reader
+from text_cleaner import text_cleaner
 
 TEXT_FORMAT = '.txt'
 PDF_FORMAT = '.pdf'
@@ -51,25 +50,50 @@ def get_year_from_file_name(file_name):
     """
     year_ = None
     for year in YEARS:
-        print(year)
         if year in file_name:
             year_ = year
             break
     return year_
 
 
-def get_text_corpus(file_path, pages):
+class ReportsReader:
     """
     Get the text corpus of the file_path using several libraries considering the corpus with more text. This method
-    will return the pdf pages indicated on the attribute pages.
-    :param file_path:
-    :param pages:
-    :return:
+    will return the text of the pdf pages indicated on the attribute page_indexes.
     """
-    text_corpus = ''
-    if file_path.endswith(PDF_FORMAT):
-        pass
-    return text_corpus
+    def __init__(self, pdf_path, page_indexes):
+        self.corpus = ''
+        self.pdf_path = pdf_path
+        self.page_indexes = page_indexes
+
+    def pdf_to_text_pdf_miner(self):
+        raw_corpus = pypdf2_reader(file_path=self.pdf_path, page_indexes=self.page_indexes)
+        return text_cleaner(raw_corpus)
+
+    def pdf_to_text_pypdf2(self):
+        raw_corpus = pypdf4_reader(file_path=self.pdf_path, page_indexes=self.page_indexes)
+        return text_cleaner(raw_corpus)
+
+    def pdf_to_text_pypdf4(self):
+        raw_corpus = pdf_miner_reader(file_path=self.pdf_path, page_indexes=self.page_indexes)
+        return text_cleaner(raw_corpus)
+
+    def get_max_corpus(self, corpus_method):
+        corpus_size = len(self.corpus.split())
+        corpus_candidate = corpus_method()
+        corpus_candidate_size = len(corpus_candidate.split())
+        print(self.pdf_path, corpus_method.__name__, corpus_candidate_size)
+        return corpus_candidate if corpus_candidate_size > corpus_size else self.corpus
+
+    def __call__(self):
+        pdf_to_text_methods = [self.pdf_to_text_pdf_miner, self.pdf_to_text_pypdf2, self.pdf_to_text_pypdf4]
+        if self.pdf_path.endswith(PDF_FORMAT):
+            for pdf_to_text_method in pdf_to_text_methods:
+                try:
+                    self.corpus = self.get_max_corpus(pdf_to_text_method)
+                except Exception as e:
+                    print(f'Unexpected error for {self.pdf_path}:', e)
+        return self.corpus
 
 
 if __name__ == "__main__":
@@ -92,7 +116,6 @@ if __name__ == "__main__":
     df_reports_data['file_path'] = df_reports_data.apply(lambda row: os.path.join(DATA_PATH,
                                                                                   row['company_name'],
                                                                                   row['company_files']), axis=1)
-    df_reports_data['text_corpus'] = df_reports_data['file_path'].apply(lambda path:
-                                                                        pypdf4_reader(file_path=path,
-                                                                                      page_indexes=[1, 2, 4, 5, 6]))
-    df_reports_data['clean_text_corpus'] = df_reports_data['text_corpus'].apply(lambda text: text_cleaner(text))
+    page_indexes = [0, 1, -2, -1]
+    df_reports_data['corpus'] = df_reports_data['file_path'].apply(lambda pdf_path: ReportsReader(pdf_path,
+                                                                                                  page_indexes)())
