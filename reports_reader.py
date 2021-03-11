@@ -17,6 +17,8 @@ script will apply all the libraries returning as more text content as possible.
 
 import os
 import pandas as pd
+from pdf_parsers.new_style import pypdf4_reader
+from pdf_parsers.text_cleaner import text_cleaner
 
 TEXT_FORMAT = '.txt'
 PDF_FORMAT = '.pdf'
@@ -90,5 +92,7 @@ if __name__ == "__main__":
     df_reports_data['file_path'] = df_reports_data.apply(lambda row: os.path.join(DATA_PATH,
                                                                                   row['company_name'],
                                                                                   row['company_files']), axis=1)
-    df_reports_data['text_corpus'] = df_reports_data['file_path'].apply(lambda path: get_text_corpus(file_path=path,
-                                                                                                     pages=[1]))
+    df_reports_data['text_corpus'] = df_reports_data['file_path'].apply(lambda path:
+                                                                        pypdf4_reader(file_path=path,
+                                                                                      page_indexes=[1, 2, 4, 5, 6]))
+    df_reports_data['clean_text_corpus'] = df_reports_data['text_corpus'].apply(lambda text: text_cleaner(text))
