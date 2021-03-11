@@ -16,8 +16,6 @@ script will apply all the libraries returning as more text content as possible.
 """
 
 import os
-import PyPDF2
-import PyPDF4
 import pandas as pd
 
 TEXT_FORMAT = '.txt'

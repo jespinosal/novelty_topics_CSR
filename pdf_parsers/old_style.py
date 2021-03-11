@@ -1,27 +1,40 @@
+import io
 import numpy as np
-import PyPDF2
+from pdfminer.converter import TextConverter
+from pdfminer.pdfinterp import PDFPageInterpreter
+from pdfminer.pdfinterp import PDFResourceManager
+from pdfminer.pdfpage import PDFPage
 
 
-def pdf_old_style_reader(file_path, page_indexes):
+def pdf_miner_reader(pdf_path, page_indexes):
     """
-    Read a PDF file and build a raw text corpus according the page_indexes
-    :param file_path:
+    This fuction read a PDF document page by page using pdfmine library
+    :param pdf_path:  directory that contains a pdf file
     :param page_indexes:
-    :return:
+    :return: It return a iterator, to read page by page the data
     """
-    pdf_file_obj = open(file_path, 'rb')
-    pdf_reader = PyPDF2.PdfFileReader(pdf_file_obj)
-    page_len = pdf_reader.numPages
-    page_positions = np.array(range(0, page_len)).take(page_indexes)
-    text_raw_corpus = [pdf_reader.getPage(page_position).extractText() for page_position in page_positions]
+    text_raw_corpus = []
+    with open(pdf_path, 'rb') as fh:
+        pages = list(PDFPage.get_pages(fh, caching=True, check_extractable=True))
+        page_positions = np.array(range(0, len(pages))).take(page_indexes)
+        for n, page in enumerate(pages):
+            if n in page_positions:
+                resource_manager = PDFResourceManager()
+                fake_file_handle = io.StringIO()
+                converter = TextConverter(resource_manager, fake_file_handle)
+                page_interpreter = PDFPageInterpreter(resource_manager, converter)
+                page_interpreter.process_page(page)
+                text = fake_file_handle.getvalue()
+                text_raw_corpus.append(text)
     return " ".join(text_raw_corpus)
 
 
-if __name__ == "__main":
+if __name__ == "__main__":
 
     file_path_ = 'report_files/microsoft/Microsoft-2019-CSR-Annual-Report.pdf'
     page_indexes_ = [1, 2, 3, -3, -2, -1]
-    raw_corpus = pdf_old_style_reader(file_path_, page_indexes_)
+    raw_corpus_text_miner = pdf_miner_reader(file_path_, page_indexes_)
+
 
 
 
