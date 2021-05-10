@@ -1,4 +1,5 @@
 import string
+import re
 import spacy as sp
 import nltk
 from nltk.corpus import stopwords
@@ -12,23 +13,26 @@ CUSTOM_STOP_WORDS = ['http'] + [letter for letter in string.ascii_lowercase]
 
 
 def delete_punctuation(text):
+    """Delete puntuation tokens in text string """
+    # it generates white spaces when punctuation is separated from text: "are you ok ?" -> "are you ok  "
     return text.translate(str.maketrans('', '', string.punctuation))
 
 
 def convert_to_lower(sentence):
     """
     Lower case for the text documents
-    :param sentence:
-    :return:
     """
     return sentence.lower()
+
+
+def remove_redundant_white_spaces(text):
+    text = re.sub(r"\s+", " ", text)
+    return text.strip()
 
 
 def word_tokenizer(text):
     """
     Split the string text in tokens
-    :param text:
-    :return:
     """
 
     tokens = nltk.tokenize.word_tokenize(text, language='english')
@@ -37,13 +41,12 @@ def word_tokenizer(text):
 
 
 def custom_stop_words_deletion(text_tokens):
-    "Delete stop words from text_tokens"
+    """Delete stop words from text_tokens"""
     base = stopwords.words('english')
     stopwords_list = CUSTOM_STOP_WORDS + base
-    return [text for text in text_tokens if text not in stopwords_list]
+    return [token for token in text_tokens if token not in stopwords_list]
 
 
-# Source: https://www.machinelearningplus.com/nlp/topic-modeling-gensim-python/#9createbigramandtrigrammodels
 def get_lemma(text, allowed_postags=['NOUN', 'ADJ', 'VERB', 'ADV']):
     """Method to get lemmas of words with pos tag indicated on allowed_postags"""
     # WARN: Lemma needs complete phrases to work better and punctuation.
@@ -53,10 +56,26 @@ def get_lemma(text, allowed_postags=['NOUN', 'ADJ', 'VERB', 'ADV']):
                       else token.text for token in doc])
     return texts_tokens_lemma
 
-def pre_processing_pipeline(text):
-  text = convert_to_lower(sentence= text)
-  text = delete_punctuation(text)
-  text_tokens = get_lemma(text)
-  text_tokens = custom_stop_words_deletion(text_tokens)
-  return text_tokens
 
+def pre_processing_pipeline(text):
+    """Basic text processing pipeline (1) lowercase, (2) delete punctuation, (3) get lemma (4) stop words"""
+    text = convert_to_lower(sentence=text)
+    text = delete_punctuation(text)
+    text = remove_redundant_white_spaces(text)
+    text_tokens = get_lemma(text)
+    text_tokens = custom_stop_words_deletion(text_tokens)
+    return text_tokens
+
+
+if __name__ == "__main__":
+
+    sample_texts = ['Here we go, it is my first (1s) time in the moon',
+                    '3 years ago I studied # math, and now I study medicine!',
+                    'A house is not the same @ that a home',
+                    'ArE YoU CrazY? are you ok Jhon ? check the https:www.empty.com/empty',
+                    'your name is Karol, K A R O L right? k a r o l',
+                    'I was running, jumping and swimming all the day']
+
+    for n, sample_text in enumerate(sample_texts):
+        print(f'Original text {n}: {sample_text}')
+        print(f'Processed text {n}: {pre_processing_pipeline(sample_text)}')
