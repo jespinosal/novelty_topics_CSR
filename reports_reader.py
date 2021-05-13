@@ -173,3 +173,8 @@ if __name__ == "__main__":
     file_name = 'csr_corpus_pages_index'+"_".join([str(page_index) for page_index in page_indexes])+'.csv'
     file_path = os.path.join(OUTPUT_PATH, file_name)
     df_reports_data.to_csv(file_path, sep=';', index=False)
+
+
+
+
+

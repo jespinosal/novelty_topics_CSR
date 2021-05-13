@@ -8,7 +8,7 @@ nlp = sp.load('en_core_web_sm', disable=['ner', 'parse'])
 
 # nltk.download('stopwords')
 # python -m spacy download en_core_web_sm
-
+# 'company'
 CUSTOM_STOP_WORDS = ['http', 'www'] + [letter for letter in string.ascii_lowercase]
 
 

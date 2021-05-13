@@ -1,29 +1,22 @@
-import gensim
-import gensim.corpora as corpora
-from gensim.utils import simple_preprocess
-from gensim.models import CoherenceModel
-
+import random
+import numpy as np
+from datetime import datetime
+from tqdm import tqdm
 import pandas as pd
-from topic_model.preprocessing import pre_processing_pipeline
-import logging
+import matplotlib.pyplot as plt
+from gensim.models import CoherenceModel
 from gensim.corpora.dictionary import Dictionary
 from topic_model.preprocessing import pre_processing_pipeline
 from gensim.models.ldamulticore import LdaMulticore
-from gensim.models.ldamodel import LdaModel
-import random
-import matplotlib.pyplot as plt
-import numpy as np
+from topic_model.topics_custom_metric import lda_models_evaluator, map_lda_topics
 
 SEED = 100
 random.seed(SEED)
+start_time = datetime.now()
 
 text_corpus_file_path = 'text_corpus/csr_corpus_pages_index0_1_2_-3_-2_-1.csv'
 
 data_frame_corpus = pd.read_csv(text_corpus_file_path, sep=';')
-
-key_words = {'environmental': ['enviroment', 'climatic'],
-             'social': ['community', 'employee', 'human rights', 'diversity'],
-             'corporate governance': ['goverment']}
 
 # docs corpus preprocessing
 data_frame_corpus['corpus_tokens'] = data_frame_corpus.corpus.apply(lambda text: pre_processing_pipeline(text=text))
@@ -35,14 +28,14 @@ common_dictionary = Dictionary(data_frame_corpus.corpus_tokens.to_list())
 corpus = [common_dictionary.doc2bow(token_list) for token_list in data_frame_corpus['corpus_tokens'].to_list()]
 
 # LDA parallelization using multiprocessing CPU cores to parallelize
-k_values = list(range(3, 10))
+k_values = list(range(3, 23))
 coherence = []
 model_list = []
-for topic_n in k_values:
+for topic_n in tqdm(k_values):
     lda_model = LdaMulticore(corpus=corpus,  # data_frame_corpus['corpus_tokens'].to_list()
                              id2word=common_dictionary,
                              num_topics=topic_n,
-                             workers=3,
+                             workers=6,
                              random_state=SEED,
                              chunksize=100,
                              passes=10,
@@ -60,6 +53,7 @@ best_model = model_list[best_model_id]
 best_coherence = coherence[best_model_id]
 best_k = k_values[best_model_id]
 
+
 print('best_coherence:', best_coherence, 'best_k:', best_k)
 plt.plot(k_values, coherence)
 plt.plot(k_values, coherence, 'bo')
@@ -67,11 +61,24 @@ plt.plot(best_k, best_coherence, 'ro')
 plt.xlabel("Num K Topics")
 plt.ylabel("Coherence score")
 plt.show()
+end_time = datetime.now()
+print(f'Duration: {end_time-start_time}')
 
 
+lda_topics_performance = lda_models_evaluator(model_list, k_values, coherence, common_dictionary)
+ESG_topics_distribution = map_lda_topics(best_model, common_dictionary)
 
 
 """
+Next steps:
+Build LDA optimize: (task 2)
+1. Coherence metric
+2. Topics with wanted words
+Define criteria to get anomalies (task 3)
+1. Using keywords
+2. Using topic
+3. Using 
+
 Pre processig_
 1. Lemma
 2. token
