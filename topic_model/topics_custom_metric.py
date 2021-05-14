@@ -2,12 +2,12 @@ import pandas as pd
 from collections import Counter
 from topic_model.preprocessing import pre_processing_pipeline
 
-TOPICS_KEY_WORDS = {'environmental': 'renewable energy impact environmental packaging reduce packaging water'
+TOPICS_KEY_WORDS = {'environmental': 'renewable energy environmental packaging reduce packaging water'
                                      ' plastic environment sustainability sustainable climatic climate weather'
-                                     ' temperature',
-                    'social': 'human responsibility people social inclusive community employee rights diversity health',
-                    'corporate governance': 'mission fiscal right market policy program corporate governance'
-                                            ' politics law business'}
+                                     ' temperature planet emission waste oil',
+                    'social': 'food human responsibility people social inclusive community employee rights diversity health',
+                    'corporate governance': 'mission fiscal right policy program corporate governance'
+                                            ' politics law statement policies rules practices transpareny defense'}
 
 
 def parse_topics_key_words(common_dictionary):
@@ -17,8 +17,9 @@ def parse_topics_key_words(common_dictionary):
     :param common_dictionary:
     :return:
     """
-    key_words_processed = {key: pre_processing_pipeline(text=words) for key, words in TOPICS_KEY_WORDS.items()}
-    key_words_map = {key:common_dictionary.doc2bow(word_tokens) for key,word_tokens in key_words_processed.items()}
+    key_words_processed = {key: list(set(pre_processing_pipeline(text=words))) for key,
+                                                                                   words in TOPICS_KEY_WORDS.items()}
+    key_words_map = {key: common_dictionary.doc2bow(word_tokens) for key,word_tokens in key_words_processed.items()}
 
     word_ids_per_topic ={}
     for topic_name in key_words_map.keys():
@@ -50,7 +51,7 @@ def lda_models_evaluator(model_list, k_values, coherence, common_dictionary):
 
     topics_probs_df = pd.DataFrame(word_probs_topics).transpose()
     topics_probs_df['k_values'] =k_values
-    topics_probs_df['avg_prob'] = topics_probs_df.mean(axis=1)
+    topics_probs_df['avg_prob'] = topics_probs_df.mean(axis=1)/topics_probs_df['k_values']
     topics_probs_df['coherence'] = coherence
     topics_probs_df['custom_metric'] = topics_probs_df['avg_prob']*topics_probs_df['coherence']
 
@@ -78,6 +79,7 @@ def map_lda_topics(best_model, common_dictionary):
 
 
 """
+best_model.show_topic(8,30)
 import pandas as pd
 from topic_model.preprocessing import pre_processing_pipeline
 

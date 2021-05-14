@@ -8,8 +8,9 @@ nlp = sp.load('en_core_web_sm', disable=['ner', 'parse'])
 
 # nltk.download('stopwords')
 # python -m spacy download en_core_web_sm
-# 'company'
-CUSTOM_STOP_WORDS = ['http', 'www'] + [letter for letter in string.ascii_lowercase]
+# ['http', 'www', 'report', 'pdf', 'company', 'product', 'year', 'business', 'reporting']
+CUSTOM_STOP_WORDS = ['http', 'www', 'report', 'pdf', 'company', 'product', 'year', 'business', 'reporting'] + \
+                    [letter for letter in string.ascii_lowercase]
 
 
 def delete_punctuation(text):

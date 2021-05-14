@@ -65,6 +65,8 @@ corpus:           microsoft corporate social responsibility repo...
 """
 
 import os
+from datetime import datetime
+from tqdm import tqdm
 import pandas as pd
 from pdf_readers import pypdf4_reader, pypdf2_reader, pdf_miner_reader
 from text_cleaner import text_cleaner
@@ -149,6 +151,7 @@ class ReportsReader:
 
 if __name__ == "__main__":
 
+    start_time = datetime.now()
     company_names = os.listdir(DATA_PATH)
     company_names = [company_name for company_name in company_names
                      if os.path.isdir(os.path.join(DATA_PATH, company_name))]
@@ -168,11 +171,15 @@ if __name__ == "__main__":
                                                                                   row['company_name'],
                                                                                   row['company_files']), axis=1)
     page_indexes = [0, 1, 2, -3, -2, -1]  # Choose the page index you want
+    tqdm.pandas()
     df_reports_data['corpus'] = df_reports_data['file_path'].apply(lambda pdf_path: ReportsReader(pdf_path,
                                                                                                   page_indexes)())
     file_name = 'csr_corpus_pages_index'+"_".join([str(page_index) for page_index in page_indexes])+'.csv'
     file_path = os.path.join(OUTPUT_PATH, file_name)
     df_reports_data.to_csv(file_path, sep=';', index=False)
+
+    end_time = datetime.now()
+    print(f'Duration: {end_time - start_time}')
 
 
 
