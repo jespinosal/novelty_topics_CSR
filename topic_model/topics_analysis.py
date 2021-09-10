@@ -112,6 +112,11 @@ if __name__ == "__main__":
     ESG_weights = ESG_weights.div(ESG_weights.sum(axis=1), axis=0)
     ESG_weights = ESG_weights.fillna(0)
     print(ESG_weights)  # --> ESC contribution in each k-topic, normalized
+    """
+    environmental           0.383811
+    social                  0.283596
+    corporate governance    0.332593
+    """
     # Overall efforts in each ESG field (mean of freq ESC in K-topics)
     overall_ESG_efforts = ESG_weights.sum(axis=0)/ESG_weights.sum(axis=0).sum()
     print(overall_ESG_efforts)
