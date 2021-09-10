@@ -17,7 +17,6 @@ SEED = 100
 random.seed(SEED)
 
 
-
 def lda_topic_model_tuning(text_corpus_file_path):
 
     start_time = datetime.now()
@@ -86,7 +85,7 @@ def load_model():
 
 def save_model(lda_model_mngr, model_name):
     model_path = os.path.join(MODEL_PATH, model_name)
-    with open(model_path, 'w') as file:
+    with open(model_path, 'wb') as file:
         pickle.dump(lda_model_mngr, file)
     print(f'model saved in {model_path}')
     return None
@@ -132,7 +131,7 @@ if __name__ == "__main__":
     lda_model_mngr=LDAModel(text_corpus_file_path=text_corpus_file_path_)
     lda_model_mngr.train()
     lda_model_mngr.model_analysis()
-    save_model(lda_model_mngr, model_name='lda_model_mngr_1.p')
+    save_model(lda_model_mngr, model_name='lda_model_mngr_26_08_2021.p')
     save_topic_words(lda_model_mngr.best_model, top=30)
 
 

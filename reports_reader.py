@@ -74,9 +74,9 @@ from text_cleaner import text_cleaner
 TEXT_FORMAT = '.txt'
 PDF_FORMAT = '.pdf'
 DATA_PATH = 'report_files'
-START_YEAR = 2000
-LAST_YEAR = 2020
-YEARS = [str(i) for i in list(range(START_YEAR, LAST_YEAR))]
+START_YEAR = 1998
+LAST_YEAR = 2021
+YEARS = [str(i) for i in list(range(START_YEAR, LAST_YEAR+1))]
 OUTPUT_PATH = 'text_corpus'
 
 
@@ -179,7 +179,14 @@ if __name__ == "__main__":
     df_reports_data.to_csv(file_path, sep=';', index=False)
 
     end_time = datetime.now()
-    print(f'Duration: {end_time - start_time}')
+    print(f'Duration: {end_time - start_time}')  # -> Duration: 3:50:50.830833
+
+    # Files manual fixing
+    """
+    df_reports_data['year'] = df_reports_data['company_files'].apply(lambda row: get_year_from_file_name(row))
+    df_reports_data['company_name'] = df_reports_data['company_name'].apply(lambda row: row.split('.')[0])
+    """
+
 
 
 

@@ -19,6 +19,30 @@ def delete_punctuation(text):
     return text.translate(str.maketrans('', '', string.punctuation))
 
 
+def format_abbreviation(text):
+    """
+    Source: https://www.programcreek.com/python/?CodeExample=normalize+text
+    :param text:
+    :return:
+    """
+    text = re.sub(r"\'s", " \'s", text)
+    text = re.sub(r"\'ve", " \'ve", text)
+    text = re.sub(r"n\'t", " n\'t", text)
+    text = re.sub(r"\'re", " \'re", text)
+    text = re.sub(r"\'d", " \'d", text)
+    text = re.sub(r"\'ll", " \'ll", text)
+    return text
+
+
+def format_punctuation(text):
+    text = re.sub(r",", " , ", text)
+    text = re.sub(r"!", " ! ", text)
+    text = re.sub(r"\(", " \( ", text)
+    text = re.sub(r"\)", " \) ", text)
+    text = re.sub(r"\?", " \? ", text)
+    return text
+
+
 def convert_to_lower(sentence):
     """
     Lower case for the text documents
