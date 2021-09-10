@@ -78,7 +78,7 @@ def get_lemma(text, allowed_postags=['NOUN', 'ADJ', 'VERB', 'ADV']):
     texts_tokens_lemma = []
     doc = nlp(text)
     texts_tokens_lemma.extend([token.lemma_ if token.pos_ in allowed_postags
-                      else token.text for token in doc])
+                               else token.text for token in doc])
     return texts_tokens_lemma
 
 
