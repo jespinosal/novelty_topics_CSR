@@ -28,6 +28,7 @@ def get_corpus(data_frame_corpus, common_dictionary=None):
     # clean and report empty reports
     print('The following files cannot be read')
     print(data_frame_corpus[data_frame_corpus['corpus'].isna()]['company_files'])
+    data_frame_corpus = data_frame_corpus.copy()
     data_frame_corpus = data_frame_corpus[~data_frame_corpus['corpus'].isna()]
 
     # docs corpus preprocessing
@@ -42,7 +43,7 @@ def get_corpus(data_frame_corpus, common_dictionary=None):
     print('Building corpus')
     corpus = [common_dictionary.doc2bow(token_list) for token_list in data_frame_corpus['corpus_tokens'].to_list()]
 
-    return corpus, common_dictionary
+    return corpus, common_dictionary, data_frame_corpus
 
 
 def lda_topic_model_tuning(text_corpus_file_path):
@@ -51,10 +52,10 @@ def lda_topic_model_tuning(text_corpus_file_path):
     # Load de report corpus dataframe
     data_frame_corpus = pd.read_csv(text_corpus_file_path, sep=';')
 
-    corpus, common_dictionary = get_corpus(data_frame_corpus, common_dictionary=None)
+    corpus, common_dictionary, data_frame_corpus = get_corpus(data_frame_corpus, common_dictionary=None)
 
     # LDA parallelization using multiprocessing CPU cores to parallelize
-    k_values = list(range(90, 110))
+    k_values = list(range(104, 107))
     coherence = []
     model_list = []
     for topic_n in tqdm(k_values):
@@ -141,6 +142,7 @@ if __name__ == "__main__":
 
     text_corpus_file_path_ = LDA_PATHS['text_corpus']
     lda_model_mngr = LDAModel(text_corpus_file_path=text_corpus_file_path_)
+    lda_model_mngr = LDAModel(text_corpus_file_path=text_corpus_file_path_)
     lda_model_mngr.train()
     lda_model_mngr.model_analysis()
     # save model, world dict and ESG topics weights
@@ -149,11 +151,6 @@ if __name__ == "__main__":
     lda_model_mngr.common_dictionary.save(LDA_PATHS['lda_dict'])
     lda_model_mngr.ESG_topics_distribution.to_csv(LDA_PATHS['topics_distribution'], sep=';')
     lda_model_mngr.lda_topics_performance.to_csv(LDA_PATHS['lda_model_performance'], sep=';')
-
-
-
-
-
 
 
 

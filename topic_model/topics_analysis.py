@@ -129,7 +129,7 @@ if __name__ == "__main__":
     # Read company reports dataset and assign the corresponding topics in each report
     data_frame_corpus = pd.read_csv(LDA_PATHS['text_corpus'], sep=';')
     data_frame_corpus = data_frame_corpus[~data_frame_corpus['corpus'].isna()]  # Filter None NaN docs
-    corpus, _ = get_corpus(data_frame_corpus, common_dictionary=lda_model.id2word)
+    corpus, _, data_frame_corpus = get_corpus(data_frame_corpus, common_dictionary=lda_model.id2word)
     # -> Get the topics over the threshold minimum_probability
     topics_per_report = [lda_model.get_document_topics(report_corpus,
                                                        minimum_probability=0.02) for report_corpus in corpus]
@@ -137,6 +137,7 @@ if __name__ == "__main__":
     # -> Summarize the results at company level:
     df_company_topics = data_frame_corpus.groupby(['company_name']).agg({'topics': 'sum'}).reset_index()
     # -> Build a vector k-topics contribution per company
+
     df_company_topics['topics_vector'] = df_company_topics.topics.apply(lambda row:
                                                                         build_lda_topic_vector(company_topics=row,
                                                                                                k=lda_model.num_topics))
